@@ -23,30 +23,10 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCouncilStore } from "@/stores/council-store";
+import { useCouncilStore, type AgentInfo } from "@/stores/council-store";
 import { useState, useMemo } from "react";
 import type { IACPMessage, IACPPriority } from "@/types";
 import type { VerificationStatus } from "@/types/council";
-
-/** Extended agent info with Wave 3 fields */
-interface AgentInfoExtended {
-  id: string;
-  name: string;
-  domain: string;
-  role: string;
-  status: string;
-  thought: string | null;
-  confidence: string | null;
-  processingTime: number | null;
-  batchIndex: number;
-  error: string | null;
-  selectionConfidence?: number;
-  performanceScore?: number;
-  verificationStatus?: VerificationStatus;
-  branchCount?: number;
-  selectedBranch?: number;
-  branches?: Array<{ branch: number; thought: string; confidence: number }>;
-}
 
 const DOMAIN_COLORS: Record<string, string> = {
   technology: "#6366f1",
@@ -95,6 +75,24 @@ function PhaseIndicator() {
   const currentIndex = phases.findIndex((p) => p.key === status);
 
   if (status === "idle") return null;
+
+  if (status === "error") {
+    return (
+      <div className="px-3 py-2 border-b">
+        <div className="flex items-center gap-1 text-[10px]">
+          <span className="text-destructive font-semibold">Error</span>
+        </div>
+        <div className="mt-1.5 h-1 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-destructive rounded-full"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-3 py-2 border-b">
@@ -484,17 +482,9 @@ export function AgentProgressPanel() {
                             {agent.name}
                           </span>
 
-                          {/* Selection confidence */}
-                          {(agent as AgentInfoExtended).selectionConfidence !== undefined && (
-                            <MiniConfidenceBar value={(agent as AgentInfoExtended).selectionConfidence!} />
-                          )}
-
-                          {/* Performance badge */}
-                          <PerformanceBadge score={(agent as AgentInfoExtended).performanceScore} />
-
                           {/* Verification status icon */}
-                          {(agent as AgentInfoExtended).verificationStatus && (
-                            <VerificationMiniIcon status={(agent as AgentInfoExtended).verificationStatus!} />
+                          {agent.verifications.length > 0 && (
+                            <VerificationMiniIcon status={agent.verifications[agent.verifications.length - 1].status} />
                           )}
 
                           {/* Memory indicator */}
@@ -527,19 +517,17 @@ export function AgentProgressPanel() {
                                     </Badge>
                                   )}
                                   {/* Branch count */}
-                                  {(agent as AgentInfoExtended).branchCount !== undefined &&
-                                    (agent as AgentInfoExtended).branchCount! > 0 && (
+                                  {agent.branches.length > 0 && (
                                     <Badge variant="secondary" className="text-[9px] h-4">
                                       <GitBranch className="h-2 w-2 mr-0.5" />
-                                      {(agent as AgentInfoExtended).branchCount} branch{(agent as AgentInfoExtended).branchCount! !== 1 ? "es" : ""}
+                                      {agent.branches.length} branch{agent.branches.length !== 1 ? "es" : ""}
                                     </Badge>
                                   )}
                                 </div>
 
                                 {/* Inline branches preview */}
-                                {(agent as AgentInfoExtended).branches &&
-                                  (agent as AgentInfoExtended).branches!.length > 1 && (
-                                  <BranchesPreview branches={(agent as AgentInfoExtended).branches!} selectedBranch={(agent as AgentInfoExtended).selectedBranch} />
+                                {agent.branches.length > 1 && (
+                                  <BranchesPreview branches={agent.branches} selectedBranch={agent.selectedBranch ?? undefined} />
                                 )}
                               </div>
                             </motion.div>

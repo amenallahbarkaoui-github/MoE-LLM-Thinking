@@ -160,10 +160,10 @@ function applyCspHeaders(response: NextResponse): NextResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Middleware entry point
+// Proxy entry point
 // ---------------------------------------------------------------------------
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const origin = req.headers.get("origin");
 
   // ---- Preflight (OPTIONS) ------------------------------------------------
@@ -210,7 +210,7 @@ export function middleware(req: NextRequest) {
   return response;
 }
 
-// Only run middleware on API routes
+// Only run proxy on API routes
 export const config = {
   matcher: "/api/:path*",
 };

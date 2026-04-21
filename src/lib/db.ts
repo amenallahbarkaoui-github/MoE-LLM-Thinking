@@ -10,7 +10,7 @@ function createPrismaClient(): PrismaClient {
   const dbUrl = process.env.DATABASE_URL ?? 'file:./dev.db'
   // Resolve relative file paths against cwd so they work correctly in Next.js
   const url = dbUrl.startsWith('file:./')
-    ? `file:${path.resolve(process.cwd(), dbUrl.slice(5))}`
+    ? `file:${path.resolve(/*turbopackIgnore: true*/ process.cwd(), dbUrl.slice(5))}`
     : dbUrl
   const adapter = new PrismaBetterSqlite3({ url })
   return new PrismaClient({ adapter })
