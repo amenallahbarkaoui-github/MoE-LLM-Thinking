@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+  ERROR
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  AGENT
+}
+
+enum AgentMemoryType {
+  RESPONSE
+  PATTERN
+  FEW_SHOT
+}
+
+model Session {
+  id           String        @id @default(cuid())
+  query        String
+  response     String?
+  status       SessionStatus @default(ACTIVE)
+  settings     String?       // JSON string of council settings used
+  tokenUsage   Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  messages     Message[]
+  agentMetrics AgentMetric[]
+}
+
+model Message {
+  id        String     @id @default(cuid())
+  sessionId String
+  role      MessageRole // user, assistant, system, agent
+  content   String
+  agentId   String?    // which agent produced this (null for user/system)
+  agentName String?
+  metadata  String?    // JSON string for extra data
+  createdAt DateTime   @default(now())
+  session   Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model AgentMetric {
+  id             String   @id @default(cuid())
+  sessionId      String
+  agentId        String
+  agentName      String
+  domain         String
+  responseTime   Int      // ms
+  tokenCount     Int      @default(0)
+  qualityScore   Float?   // 0-1, set by feedback
+  relevanceScore Float?   // 0-1
+  wasUseful      Boolean? // user feedback
+  createdAt      DateTime @default(now())
+  session        Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model AgentMemory {
+  id         String         @id @default(cuid())
+  agentId    String
+  agentName  String
+  domain     String
+  queryHash  String         // hash of the query this memory relates to
+  content    String         // the memory content (successful response, pattern, etc.)
+  type       AgentMemoryType // "response", "pattern", "few_shot"
+  score      Float          @default(0) // relevance score
+  usageCount Int            @default(0) // how many times this memory was used
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([agentId, domain])
+  @@index([queryHash])
+}
