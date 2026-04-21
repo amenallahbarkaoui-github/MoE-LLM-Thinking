@@ -15,9 +15,9 @@
 
 ## Overview
 
+---
 <img width="526" height="586" alt="image" src="https://github.com/user-attachments/assets/93ca3f35-3e74-4dc7-bd44-cb31495cfc9d" />
-
-
+---
 
 **MoE LLM Thinking** is a multi-agent AI system that orchestrates **up to 70 specialized agents across 10+ domains**. It moves beyond traditional chat applications by enabling collaborative reasoning, inter-agent communication, and structured synthesis with confidence scoring. The system emphasizes transparency and depth: agents discuss among themselves, reach consensus or highlight disagreement, and produce a unified, weighted synthesis. Real-time streaming delivers early insights, evolving analysis, and the final comprehensive response.
 
